@@ -28,6 +28,8 @@
     once_cell,
     type_ascription,
     result_into_ok_or_err,
+    stmt_expr_attributes,
+    with_options,
     map_first_last
 )]
 #![cfg_attr(debug_assertions, allow(unused_variables, unused_imports, dead_code))]
@@ -80,8 +82,13 @@ pub mod utils;
 /// Websocket related logic.
 pub mod websocket;
 
+pub use routes::settings::get_global_settings;
+pub use routes::settings::init_global_settings;
+pub use routes::settings::set_global_settings;
+pub use routes::settings::GlobalSettings;
+
 /// Function builds a logger drain that drains to a json file located in logs/ and also to stdout.
-pub fn build_logger() -> slog::Logger {
+pub fn build_logger(debug: bool) -> slog::Logger {
     let date_now = Utc::now();
 
     let decorator = TermDecorator::new().build();
@@ -109,6 +116,8 @@ pub fn build_logger() -> slog::Logger {
     }
 
     let json_drain = Async::new(slog_json_default::default(file).fuse())
+        .chan_size(2048)
+        .overflow_strategy(slog_async::OverflowStrategy::Block)
         .build()
         .fuse();
 

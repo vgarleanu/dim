@@ -33,6 +33,8 @@ pub enum DimError {
     InvalidMediaType,
     #[error(display = "A error in the streaming library has occured")]
     StreamingError(#[error(source)] StreamingErrors),
+    #[error(display = "You do not have permission to access this route")]
+    Unauthorized,
     #[error(display = "A error has occured when matching.")]
     ScannerError(#[error(source)] ScannerError),
 }
@@ -49,7 +51,7 @@ impl warp::Reply for DimError {
             | Self::IOError
             | Self::InternalServerError
             | Self::ScannerError(_) => StatusCode::INTERNAL_SERVER_ERROR,
-            Self::AuthRequired => StatusCode::UNAUTHORIZED,
+            Self::AuthRequired | Self::Unauthorized => StatusCode::UNAUTHORIZED,
             Self::InvalidMediaType => StatusCode::NOT_ACCEPTABLE,
         };
 
